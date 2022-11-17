@@ -36,8 +36,6 @@ public class HopfieldNetwork {
         do {
             prevRecognizedVector = recognizedVector.clone();
 
-            int networkEnergy = 0;
-
             alternatingVectors[loopNum % 4] = recognizedVector.clone();
 
             for (int index1 = 0; index1 < weights.length; ++index1) {
@@ -47,11 +45,9 @@ public class HopfieldNetwork {
                     neuronPotential += weights[index1][index2] * prevRecognizedVector[index2];
                 }
 
-                networkEnergy += neuronPotential * recognizedVector[index1];
-
                 recognizedVector[index1] = activation(neuronPotential);
             }
-            System.out.println(networkEnergy);
+            System.out.println(calcNetworkEnergy(recognizedVector));
             ++loopNum;
         } while (!Arrays.equals(recognizedVector, prevRecognizedVector) &&
                 !(loopNum > 3 && checkAlternatingStates(alternatingVectors)));
@@ -71,16 +67,35 @@ public class HopfieldNetwork {
         return Arrays.equals(states[0], states[2]) && Arrays.equals(states[1], states[3]);
     }
 
+    private int calcNetworkEnergy(int[] outVector) {
+        int networkEnergy = 0;
+
+        for (int index1 = 0; index1 < outVector.length; ++index1) {
+            for (int index2 = 0; index2 < outVector.length; ++index2) {
+                networkEnergy += weights[index1][index2] * outVector[index1] * outVector[index2];
+            }
+        }
+
+        return networkEnergy / -2;
+    }
+
     public static void main(String[] args) {
         int[][] dataSet = {
-                {1, 1, 1, 1, -1, -1, 1, -1, -1},
-                {1, 1, 1, 1, -1, 1, 1, 1, 1},
-                {1, 1, 1, -1, 1, -1, -1, 1, -1},
+                {1, 1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1, 1, 1 },
+                {-1, -1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1},
+                {1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1, 1, 1, 1},
+//                {1, 1, 1, -1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1},
+//                {1, -1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, -1, -1, 1},
+//                {1, 1, 1, 1, -1, -1, 1, 1, 1, -1, -1, 1, 1, 1, 1},
+//                {1, 1, 1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1},
+//                {1, 1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1, -1, -1, 1},
+//                {1, 1, 1, 1, -1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1},
+//                {1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1},
         };
 
-        int[] noiseVector = {1, 1, 1, 1, -1, -1, 1, 1, -1};
+        int[] noiseVector = {1, -1, 1, 1, -1, 1, 1, 1, 1, 1, -1, 1, 1, -1, 1};
 
-        HopfieldNetwork hopfieldNetwork = new HopfieldNetwork(9);
+        HopfieldNetwork hopfieldNetwork = new HopfieldNetwork(15);
         hopfieldNetwork.learn(dataSet);
         System.out.println(Arrays.toString(hopfieldNetwork.recognize(noiseVector)));
 
